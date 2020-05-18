@@ -1,0 +1,237 @@
+---
+title: "Analsis of Insurance Charges"
+author: "Group 7"
+date: "December 18, 2019"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(comment = NA)
+library(ggplot2)
+library(ggpubr)
+library(readr)
+```
+
+```{r include=FALSE}
+
+file<-"https://raw.githubusercontent.com/rjpena/Random/master/insurance.csv"
+insurance <- read_csv(file,col_types = cols(age = col_number(),children = col_factor(levels = c("0","1", "2", "3", "4", "5")), region = col_skip(),sex = col_factor(levels = c("male", "female")), smoker = col_factor(levels = c("yes","no"))))
+attach(insurance)
+```
+
+```{r include=FALSE}
+nums<-c("age","bmi","charges")
+cats<-c("sex","children","smoker")
+nums<-insurance[nums]
+cats<-insurance[cats]
+```
+
+## Introduction   
+This project is based on observing the trends of the Annual Medical Cost associated with the Primary Insurance Holder, based on multiple factors such as their *Age* in years, *Sex*, *BMI*, No. of *Children*, and *Smoking* tendency. This data is simulated based on Census responses and was taken from Kaggle at: "https://www.kaggle.com/mirichoi0218/insurance". The population of study is the general population of the United States. 
+
+This dataset and population were selected for analysis because medical charges in the United States are a hot topic for most adults in the country. The goal of this study is to identify relationships between certain demographic factors and the amount of medical charges that are incurred as a result.
+
+The relationships to be analysed in this paper are: 1) The effect of *Age* on medical charges, 2) the effect of the number of *Children* on medical charges, 3) the  effect of *BMI* on medical charges. A multiple linear regression will be conduction at the end to try to identify the variables with the most impact on medical charges.
+
+## Methods  
+The sampling unit for this observational study is an individual with insurance (Primary Insurance Holder) that was canvased during the Census.
+
+#### Variables  
+
+*Dependent Variables*
+
+Continuous Predictors:    
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Age (discrete)*: Age of Primary Insurance Holder in years.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*BMI (continuous)*: Body Mass Index, henceforth referred to as BMI, is the ratio of the weight of an individual to the square of their height. The units are in Metric system – (kg / m ^ 2).  
+  
+Categorical Predictors:  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Sex (categorical)*: Gender of the Primary Insurance Holder, Male or Female.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Smoker (categorical)*: If the Primary Insurance Holder is a Smoker or Non-Smoker.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Children (discrete)*: Number of children covered by health insurance; ranging from 0 to 5.   
+  
+*Independent Variable* 
+
+*Charges (continuous)*: Dollar amount of medical costs for each Primary Insurance Holder charged by Health Insurers.
+
+#### Data Pre-processing  
+Age: none  
+Sex: Converted from strings to factors with levels: Male/Female  
+BMI: none  
+Children: Converted from integer to factors with levels: 0,1,2,3,4,5  
+Smoker: Converted from string format to factors with levels: Yes/No 
+Charges:none  
+
+
+
+## Results
+
+Table 1:Summary Statistics of Numerical Variables
+```{r echo=FALSE}
+names1<-c("Count","Mean","Median","St.Dev.","Pearson Correlation w/ Charges")
+Age<-c(length(age),round(mean(age),2),round(median(age),2),round(sd(age),2),round(cor(age,charges),4))
+BMI<-c(length(bmi),round(mean(bmi),2),round(median(bmi),2),round(sd(bmi),2),round(cor(bmi,charges),4))
+Charges<-c(length(charges),round(mean(charges),2),round(median(charges),2),round(sd(charges),2),round(cor(charges,charges),4))
+numStats<-as.data.frame(rbind(Age,BMI,Charges))
+names(numStats)<-names1
+numStats
+```
+
+Table 2:*Sex*
+```{r echo=FALSE}
+table(sex)
+```
+Table 3:*Smoker*
+```{r echo=FALSE}
+table(smoker)
+```
+Table 4: *Children*
+```{r echo=FALSE}
+table(children)
+```
+
+```{r echo=FALSE}
+s<-ggplot(cats) + geom_bar(aes(x=sex),fill="steelblue")+theme_minimal()
+k<-ggplot(cats) + geom_bar(aes(x=children),fill="steelblue")+theme_minimal()
+sm<-ggplot(cats) + geom_bar(aes(x=smoker),fill="steelblue")+theme_minimal()
+barCats <- ggarrange(s,k,sm,ncol=3,nrow=1)
+annotate_figure(barCats,top = "Figure1: Distributions of Categorical Variables")
+```
+
+```{r echo=FALSE}
+a<-ggplot(nums, aes(x=age)) + geom_histogram(color="black", fill="steelblue",binwidth = 5)+theme_minimal()
+b<-ggplot(nums, aes(x=bmi)) + geom_histogram(color="black", fill="steelblue",binwidth = 5)+theme_minimal()
+c<-ggplot(nums, aes(x=charges)) + geom_histogram(color="black", fill="steelblue",binwidth = 10000)+theme_minimal()
+histNums<-ggarrange(a,b,c,ncol=3,nrow=1)
+annotate_figure(histNums,top = "Figure 2: Histograms of Numerical Variables")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*Hypothesis Test 1*  
+As *Age* increases, does the amount of *Charges* of the Primary Insurance Holder increase.  
+**a priori hypothesis**: Medical *Charges* of the older Primary Insurance Holders will be higher than younger Primary Insurance Holders.
+
+```{r echo=FALSE}
+#this data looks sketchy af...
+lm1<-lm(insurance$charges~insurance$age)
+temp_var <- predict(lm1, interval = "prediction")
+new_1 <- cbind (insurance, temp_var)
+ggplot(new_1,aes(x=age,y=charges)) + geom_point()+ geom_line(aes(y=lwr), color = "red", linetype = "solid")+ geom_line(aes(y=upr), color = "red", linetype = "solid")+ geom_smooth(method=lm) + theme_minimal() + stat_smooth(method = "lm", se = F) + stat_smooth(method = "lm", geom = "ribbon", fill = NA, linetype = "dashed", colour = "blue")+labs(x = "Age", y="Charges", title="Figure 3: Scatter Plot - Age v/s Charges" , subtitle =" Linear Regression, Confidence & Prediction Intervals")
+
+plot(lm1)
+
+```
+
+
+```{r echo=FALSE}
+lm1<-lm(insurance$charges~insurance$age)
+confint(lm1)
+summary(lm1)
+
+```
+
+*Hypothesis Test 2*  
+Medical *Charges* increase with an increase inthe number of *Children* under a Primary Insurance Holder.    
+**a priori hypothesis** Primary Insurance Holders with a greater number of *Children* have higher *Charges* than the Primary Insurance Holders with fewer *Children*.  
+
+```{r echo=FALSE}
+#this should look better once dummy variables for children are done
+ggplot(insurance,aes(x=children,y=charges)) + geom_point() + geom_smooth(method=lm) + theme_minimal() + stat_smooth(method = "lm", se = F) + stat_smooth(method = "lm", geom = "ribbon", fill = NA, linetype = "dashed", colour = "blue")
+
+```
+
+```{r echo=FALSE}
+lm2<-lm(charges~children)
+summary(lm2)
+```
+
+*Hypothesis Test 3*  
+As *BMI* increases in Primary Insurance Holders so do medical *Charges*.
+**a priori hypothesis** this is true.  
+
+```{r echo=FALSE}
+lm3<-lm(charges~bmi)
+temp_var3 <- predict(lm3, interval = "prediction")
+new_3 <- cbind (insurance, temp_var3)
+ggplot(new_3,aes(x=bmi,y=charges)) + geom_point()+ geom_line(aes(y=lwr), color = "red", linetype = "solid")+ geom_line(aes(y=upr), color = "red", linetype = "solid") + geom_smooth(method=lm) + theme_minimal() + stat_smooth(method = "lm", se = F) + stat_smooth(method = "lm", geom = "ribbon", fill = NA, linetype = "dashed", colour = "blue")+labs(x = "BMI", y="Charges", title="Figure 6: Scatter Plot - BMI v/s Charges" , subtitle =" Linear Regression, Confidence & Prediction Intervals")
+
+plot(lm3)
+```
+
+```{r echo=FALSE}
+lm3<-lm(charges~bmi)
+summary(lm3)
+```
+
+
+
+```{r}
+
+library(e1071)
+skewness(insurance$age)
+skewness(insurance$bmi)
+skewness(insurance$charges)
+
+insurance$logcharges<-log(insurance$charges)
+skewness(insurance$logcharges)
+ggplot(insurance,aes(x=age,y=logcharges)) + geom_point() + geom_smooth(method=lm) + theme_minimal() 
+ggplot(insurance,aes(x=children,y=logcharges)) + geom_point() + geom_smooth(method=lm) + theme_minimal()
+ggplot(insurance,aes(x=bmi,y=logcharges)) + geom_point() + geom_smooth(method=lm) + theme_minimal()
+
+
+loglm1<-lm(insurance$logcharges~insurance$age)
+loglm2<-lm(insurance$logcharges~insurance$children)
+loglm3<-lm(insurance$logcharges~insurance$bmi)
+
+summary(loglm1)
+summary(loglm2)
+summary(loglm3)
+
+temp_var4 <- predict(loglm1, interval = "prediction")
+new_4 <- cbind (insurance, temp_var4)
+ggplot(new_4,aes(x=age,y=logcharges)) + geom_point()+ geom_line(aes(y=lwr), color = "red", linetype = "solid")+ geom_line(aes(y=upr), color = "red", linetype = "solid")+ geom_smooth(method=lm) + theme_minimal() + stat_smooth(method = "lm", se = F) + stat_smooth(method = "lm", geom = "ribbon", fill = NA, linetype = "dashed", colour = "blue")+labs(x = "Age", y="Charges", title="Figure 9: Scatter Plot - Age v/s Transformed Charges" , subtitle =" Linear Regression, Confidence & Prediction Intervals")
+plot(loglm1)
+
+```
+
+```{r}
+temp_var5 <- predict(loglm3, interval = "prediction")
+new_5 <- cbind (insurance, temp_var5)
+ggplot(new_5,aes(x=bmi,y=logcharges)) + geom_point()+ geom_line(aes(y=lwr), color = "red", linetype = "solid")+ geom_line(aes(y=upr), color = "red", linetype = "solid")+ geom_smooth(method=lm) + theme_minimal() + stat_smooth(method = "lm", se = F) + stat_smooth(method = "lm", geom = "ribbon", fill = NA, linetype = "dashed", colour = "blue")+labs(x = "BMI", y="Charges", title="Figure 12: Scatter Plot - BMI v/s Transformed Charges" , subtitle =" Linear Regression, Confidence & Prediction Intervals")
+plot(loglm3)
+
+```
+
+
+```{r}
+
+mlr2<-lm(insurance$logcharges~insurance$age+insurance$bmi+insurance$children+insurance$smoker+insurance$sex)
+summary(mlr2)
+
+```
+
+
+
+
+
+
+
+
+

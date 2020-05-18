@@ -1,0 +1,303 @@
+---
+title: "Homework 2: Summary Statistics"
+author: "Ruben Pena"
+date: "Due: November 20, 2019, 5:00 p.m"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(comment = NA)
+```
+
+<br>
+
+## Hand Spans
+
+```{r import_survey, include=FALSE}
+library(readr)
+survey <- read_csv("D:/MTU/FALL2019/StatMethods/Report2/stats.survey.csv", 
+    col_types = cols(Clap = col_factor(levels = c("Left", 
+        "Right", "Neither"),include_na=TRUE), Exer = col_factor(levels = c("None", 
+        "Some", "Frequent"),include_na=TRUE), Fold = col_factor(levels = c("R on L", 
+        "L on R", "Neither"),include_na=TRUE),Pulse = col_integer(), 
+        Sex = col_factor(levels = c("Male", 
+            "Female"),include_na=TRUE), Smoke = col_factor(levels = c("Never", 
+            "Occasional", "Regular", "Heavy"),include_na=TRUE), 
+        WHnd = col_factor(levels = c("Right", 
+            "Left"),include_na=TRUE)))
+```
+
+```{r include=FALSE}
+str(survey)
+W<-survey$WrHnd
+N<-survey$NWHnd
+diffHands<-W-N
+```
+***WrHnd*** - the span of the student’s writing hand (cm)  
+***NWHnd*** - the span of the student’s non-writing hand (cm)  
+*(Span is the span of someone’s hand is the distance from the tip of their thumb to the tip of their pinky finger when their hand is fully stretched.)*  
+
+**Design and Testing**  
+As these measurements are the hands of the **same** subject, hypothesis testing will require the use of paired methods.  
+Potential methods include: Sign Test, Wilcoxon Signed Rank Test and the test method will be the paired *t*-test.
+  
+**Hypothesis (based on the *a priori* assumption)**   
+**H~0~: $\mu_W$ = $\mu_N$** On average, a student's writing hand and non-writing hand are equal.  
+**H~A~: $\mu_W$ > $\mu_N$** On average, a student's writing hand is larger than non-writing hand.  
+
+where;  
+**$\mu_W$**: the population mean of the span of the student's writing hand.  
+**$\mu_N$**: the population mean of the span of the student's non-writing hand. 
+
+```{r include=FALSE}
+spanTest<-t.test(W,N,alternative = 'greater',paired=TRUE,mu=0,conf.level = 0.95)
+testStat<-spanTest$statistic
+pval<-spanTest$p.value
+dof<-spanTest$parameter
+meanDiff<-spanTest$estimate
+sdDiff<-sd(diffHands[!is.na(diffHands)])
+spanTest
+```
+<br>
+**Results Table**
+
+```{r spans_table, echo=FALSE,fig.align="center"}
+WritingHand<-c(round(mean(W[!is.na(W)]),4),round(sd(W[!is.na(W)]),4),' ',' ',' ')
+NonWritingHand<-c(round(mean(N[!is.na(N)]),4),round(sd(N[!is.na(N)]),4),' ',' ',' ')
+Difference<-c(round(meanDiff,4),round(sdDiff,4),' ',' ',' ')
+Results<-c(' ',' ',dof,round(testStat,4),round(pval,4))
+names<-c('Mean','StDev','DoF','T-Stat','p-value')
+df<-data.frame(rbind(WritingHand,NonWritingHand,Difference,Results))
+colnames(df)=names
+df
+```
+<br>
+**Two-sided Hypothesis on Differences**  
+
+**H~0~: $\mu_W$ - $\mu_N$ = 0** On average Writing hand and non-writing hand are equal.  
+**H~A~: $\mu_W$ - $\mu_N$ $\neq$ 0** On average Writing hand is larger than non-writing hand. 
+
+
+```{r echo=FALSE,fig.align="center"}
+diffSpanTest<-t.test(diffHands,alternative = 'two.sided',mu=0,conf.level = 0.95)
+diffSpanTest
+```
+
+**Interpreting the 95% CI**  
+
+Given the sample, 95 out of 100 times the estimated mean of diffHands will fall between `r round(diffSpanTest$conf.int,4)` centimeters. The significance of this p-val <  0.05 means that the H~O~ would be Rejected and that the true mean of differences is not 0, based on this sample and this parametric test.
+
+**Assessing Normality**  
+<br>
+```{r qqdiffHands, echo=FALSE, fig.align="center"}
+qqnorm(diffHands,main = "Q-Q Plot of Difference of Hand Spans",xlab = "",ylab="")
+qqline(diffHands)
+```
+Based on the results of the qqplot, I would say that the population is not normal. The t-test should not be used. The "steps" that are plotted indicate high frequencies of the same values. Results of a Shapiro-Wilks normality test (seen below) indicate that this population does not approximate a normal distribution.  
+<br>
+```{r echo=FALSE}
+shapiro.test(diffHands)
+#wilcox.test(W,N,mu=0,conf.level = 0.95,paired = TRUE,alternative = "two.sided")
+```
+
+**Decision of the t-Test**  
+The results of the two-sided t-test show:
+p-val=`r round(diffSpanTest$p.value,4)` < $\alpha$=0.05  
+There is significant evidence to ***Reject H~0~***; The means span of Writing hand and non-Writing hand are not equal.  
+<br>
+**Nonparametric Sign Test**  
+*Assumption: This meant a two-sided test not on Differences and not a right-sided test of the a priori*  
+```{r signTest_hands,fig.align="center"}
+library(DescTools)
+signTest<-SignTest(W,N,mu=0,conf.level = 0.95,alternative = "two.sided")
+signTest
+
+```
+Decision of non-parametric Sign test:   
+Given the sample, roughly 96 out of 100 times the true mean of differences of Writing hand and Non-writing hand will be 0.  
+p-val=`r signTest$p.val` > $\alpha$=0.05  
+***Retain H~0~*** 
+
+**Conclusion**  
+I chose to conduct a paired sample, because these variables are not independent of each other. They are measurements of the same subject.
+
+Under the assumption of a normally distributed population, the t-test results in a rejection of the null hypothesis that the means of both samples are equal with a 95% confidence interval.
+
+When not assuming a normally distributed population, the Sign test shows strong evidence that the null hypothesis should be retained; the means of writing hand and non-writing hand spans are approximately equal with a 95% confidence interval.
+
+Based on my analysis of the normality of the data, and the results of the Shapiro-Wilks test, I have the most confidence in the Sign Test results that the population mean of the differences of Writing hand and non-writing hand are equal(approximately 0).  
+The steps in the QQ-plot push the data off a straight line and the outlier at the right tail concerned me. The Shapiro-Wilks test confirmed my suspicion that this was a non-parametric sample despite the abundance of samples. The non-parametric test is significant.
+
+Based on these assumptions, I would agree with the SignTest and Retain H~0~.
+
+## Age of Students
+
+***Age***: Age (years) of the student.  
+***MI***: Whether the student reported their height in Metric or Imperial units of measure.
+
+```{r include=FALSE}
+I<-subset(survey,MI=="Imperial",select=Age)
+M<-subset(survey,MI=="Metric",select=Age)
+typeof(I)
+I<-unlist(I)
+M<-unlist(M)
+typeof(I)
+```
+
+**Design**  
+These measures are unpaired. Ages and the system of measurement students use are *independant* of each other.  
+
+**Testing**  
+Welch *t*-test and Mann-Whitney 
+
+**Welch's t-Test**  
+
+Hypothesis   
+**H~0~: $\mu_AM$ = $\mu_AI$** On average Age of those who reported in Metric and those who reported in Imperial are equal.  
+**H~A~: $\mu_AM$ $\neq$ $\mu_AI$** On average Age of those who reported in Metric and those who reported in Imperial are NOT equal.  
+
+where;  
+**$\mu_AM$**: population mean of the Age of those who reported in Metric.  
+**$\mu_AI$**: population mean of the Age of those who reported in Imperial. 
+
+```{r include=FALSE}
+IMtest<-t.test(I,M,alternative = 'two.sided',mu=0,conf.level = 0.95)
+testStatIM<-IMtest$statistic
+pvalIM<-IMtest$p.value
+dofIM<-IMtest$parameter
+meanDiffIM<-IMtest$estimate
+IMtest
+```
+
+**Results Table**  
+```{r AM_table, echo=FALSE,fig.align="center"}
+AgeImperial<-c(round(mean(I[!is.na(I)]),4),round(sd(I[!is.na(I)]),4),' ',' ',' ')
+AgeMetric<-c(round(mean(M[!is.na(M)]),4),round(sd(M[!is.na(M)]),4),' ',' ',' ')
+#DifferenceIM<-c(round(meanDiff,4),round(sdDiff,4),' ',' ',' ')
+Results<-c(' ',' ',round(dofIM),round(testStatIM,4),round(pvalIM,4))
+names<-c('Mean','StDev','DoF','T-Stat','p-value')
+df2<-data.frame(rbind(AgeImperial,AgeMetric,Results))
+colnames(df2)=names
+df2
+```
+
+**Two-sided Hypothesis on Differences**    
+Using the table function I found that there is an imbalance in the number of samples of Metric(n=141) and Imperial(n=68). In order to calculate the difference I took a sample of Metric users to match the number of records in Imperial users.   
+
+This was done using the sample(), without replacement, to take a random sample with a count of 68 of Metric to compare averages. A seed was set in order to easily replicate and reproduce the same numbers when run. I compared the mean of this Metric sample to the original mean and they are within .03 years of each other. Using this sample I calculated the differences and ran a the two-sided hypothesis test with 95% confidence level.  
+
+```{r echo=FALSE,fig.align="center"}
+#diffIM<-mean(I)-mean(M)
+#diffTestIM<-t.test(diffIM,alternative = 'two.sided',mu=0,conf.level = 0.95)
+set.seed(0)
+sampM<-sample(M,68,replace=FALSE)
+diffIM<-I-sampM
+diffImtest<-t.test(diffIM,alternative = 'two.sided',mu=0,conf.level = 0.95)
+diffImtest
+```
+Based on the results of the test on the differences in Age for Imperial/Metric users, the confidence interval reported is `r round(diffImtest$conf.int,4)` years.  
+
+This means that based on the sample 95 out of 100 times the population mean would fall between this range of age in years. This also means that the average age between the two populations in this sample is relatively low.
+
+  
+**QQplots**
+```{r qqAgesM, echo=FALSE, fig.align="center"}
+qqnorm(M,main = "Q-Q Plot of Age of Metric",xlab = "",ylab="")
+qqline(M)
+```
+The QQ plot for the Age of Metric users is definitely NOT normal with a right skew.
+
+```{r qqAgesI, echo=FALSE, fig.align="center"}
+qqnorm(I,main = "Q-Q Plot of Age of Imperial",xlab = "",ylab="")
+qqline(I)
+```
+The QQ plot for the Age of Imperial users is definitely NOT normal with a right skew.  
+
+**Decision of the Test**    
+Based on the results of the unpaired *t*-test under parametric assumptions with `r round(pvalIM,4)` is > $\alpha$=0.05 there is evidence to Retain **H~0~: $\mu_AM$ = $\mu_AI$** with 95% confidence. 
+
+
+**Nonparametric Test**
+```{r echo=TRUE}
+npIM<-wilcox.test(I,M,mu=0, alternative = "two.sided",conf.level=0.95)
+npIM
+```
+Based on the results of the Mann-Whitney test:  
+p-val=`r npIM$p.val` < $\alpha$=0.05  
+There is significant evidence to ***Reject H~0~***: The mean Age of Imperial users is not the same as the mean Age of Metric users.  
+
+
+**Conclusions**
+
+Under parametric assumptions the Welch's *t*-test the p-val of `r round(pvalIM,4)` is > $\alpha$=0.05. Retain H~O~:$\mu_AM$ = $\mu_AI$. The p-val is > alpha, but the QQ plots of each show that both populations have issues assuming normality.
+
+Under non-parametric assumptions the Mann-Whitney test shows: p-val= `r round(npIM$p.val,4)` < $\alpha$=0.05. These results are significant.
+
+For this case, I have more trust in the non-parametric test and propose that the means of each population I and M are NOT equal and would ***REJECT H~0~***
+
+
+## Exercise Frequency
+***Sex***: the gender of the student.  
+***Exer***: how often the student reported that they exercise.  
+```{r include=FALSE}
+Frequent<-subset(survey,Exer=="Frequent",select=c(Sex,Exer))
+table(Frequent)
+nF<-118
+nM<-118
+Frequent<-Frequent[-72,]
+FeFreq<-Frequent[Frequent$Sex=="Female",]
+MaFreq<-Frequent[Frequent$Sex=="Male",]
+xF<-49
+xM<-65
+T1<-table(Frequent,exclude = c('None','Some'))
+T1<-T1[-3,]
+T1
+```
+
+Hypothesis   
+**H~0~: $\mu_PM$ = $\mu_PF$** On average Male and Female student exercise frequency is the same.  
+**H~A~: $\mu_PM$ $\neq$ $\mu_PF$** On average Male and Female student exercise frequency is NOT the same.  
+
+where;  
+**$\mu_PM$**: population mean of the proportion of Males who exercise.  
+**$\mu_PF$**: population mean of the proportion of Females who exercise.
+
+
+Distributions of Frequent Exercise in Females and Males
+```{r dist, echo=FALSE}
+Males<-c(65,118)
+Females<-c(49,118)
+distDf<-rbind(Males,Females)
+colnames(distDf)<-c("x","n")
+test<-t(distDf)
+test
+```
+Sample Proportions for Female and Male Frequent Exercisers  
+```{r echo=FALSE,include=FALSE}
+final<-prop.test(test,alternative='two.sided',conf.level=0.95)
+final
+```
+
+```{r echo=FALSE}
+propTestF<-prop.test(xF,nF,alternative="two.sided",conf.level=0.95)
+propTestM<-prop.test(xM,nM,alternative="two.sided",conf.level=0.95)
+Males<-c(round(final$estimate[1],4),' ',' ')
+Females<-c(final$estimate[2],' ',' ')
+Results<-c(' ',round(final$statistic,4),round(final$p.value,4))
+namesP<-c("Estimate","X2","p-value")
+dfProp<-data.frame(rbind(Males,Females,Results))
+colnames(dfProp)<-namesP
+dfProp
+```
+
+
+
+**Decision and Conclusion**  
+Based on the results of the proportions tests  p-val=`r round(final$p.val,4)` > $\alpha$=0.05 Retain **H~0~: $\mu_PM$ = $\mu_PF$** , it can be said that (based on this sample) Males and Females tend to Frequently work out the same, on average based on  this sample. According to the test the ~7% difference is estimates is not significant enough to prove that any population works out Frequently more than the other proportionately.
+
+
+
+
+

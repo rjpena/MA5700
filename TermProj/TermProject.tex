@@ -1,0 +1,400 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Analsis of Insurance Charges},
+            pdfauthor={Group 7},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Analsis of Insurance Charges}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Group 7}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{December 12, 2019}
+
+
+\begin{document}
+\maketitle
+
+\hypertarget{introduction}{%
+\subsection{Introduction}\label{introduction}}
+
+This project is based on observing the trends of the Annual Medical Cost
+associated with the Primary Insurance Holder, based on multiple factors
+such as their age, sex, BMI, No.~of Children, Smoking tendency and their
+residential region. This data is simulated based on Census responses and
+was taken from
+Kaggle{[}``\url{https://www.kaggle.com/mirichoi0218/insurance}''{]}. The
+population of study is the general population of the United States.
+
+\hypertarget{variables}{%
+\subsubsection{Variables}\label{variables}}
+
+\emph{Dependent Variables}
+
+Continuous Predictors:\\
+\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\emph{Age
+(discrete)}: Age of Primary Insurance Holder in years.\\
+\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\emph{BMI
+(continuous)}: Body Mass Index, henceforth referred to as BMI, is the
+ratio of the weight of an individual to the square of their height. The
+units are in Metric system -- (kg / m \^{} 2).
+
+Categorical Predictors:\\
+\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\emph{Sex
+(categorical)}: Gender of the Primary Insurance Holder.\\
+\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\emph{Smoker
+(categorical)}: If the Primary Insurance Holder is a Smoker or
+Non-Smoker.\\
+\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\hspace*{0.333em}\emph{Children
+(discrete)}: Number of children covered by health insurance.
+
+\emph{Independent Variable}\\
+\textbf{Charges (continuous)}: Dollar amount of medical costs for each
+Primary Insurance Holder charged by Health Insurers.
+
+This dataset and population were selected for analysis because medical
+charges in the United States are a hot topic for most adults in the
+country. The goal of this study is to identify relationships between
+certain demographic factors and the amount of medical charges that are
+incurred as a result.
+
+The relationships to be analysed in this paper are: 1) The effect of
+\emph{Age} on medical charges, 2) the effect of the number of
+\emph{Children} on medical charges, 3) the effect of \emph{BMI} on
+medical charges. A full multiple linear regression will be conduction at
+the end to try to identify the variables with the most impact on medical
+charges.
+
+\hypertarget{methods}{%
+\subsection{Methods}\label{methods}}
+
+The sampling unit is an individual that was canvased during the Census.
+{[}``\url{https://www.kaggle.com/mirichoi0218/insurance}''{]}
+
+\begin{verbatim}
+# A tibble: 6 x 6
+    age sex      bmi children smoker charges
+  <dbl> <fct>  <dbl> <fct>    <fct>    <dbl>
+1    19 female  27.9 0        yes     16885.
+2    18 male    33.8 1        no       1726.
+3    28 male    33   3        no       4449.
+4    33 male    22.7 0        no      21984.
+5    32 male    28.9 0        no       3867.
+6    31 female  25.7 0        no       3757.
+\end{verbatim}
+
+\begin{verbatim}
+Classes 'spec_tbl_df', 'tbl_df', 'tbl' and 'data.frame':    1338 obs. of  6 variables:
+ $ age     : num  19 18 28 33 32 31 46 37 37 60 ...
+ $ sex     : Factor w/ 2 levels "male","female": 2 1 1 1 1 2 2 2 1 2 ...
+ $ bmi     : num  27.9 33.8 33 22.7 28.9 ...
+ $ children: Factor w/ 6 levels "0","1","2","3",..: 1 2 4 1 1 1 2 4 3 1 ...
+ $ smoker  : Factor w/ 2 levels "yes","no": 1 2 2 2 2 2 2 2 2 2 ...
+ $ charges : num  16885 1726 4449 21984 3867 ...
+ - attr(*, "spec")=
+  .. cols(
+  ..   age = col_number(),
+  ..   sex = col_factor(levels = c("male", "female"), ordered = FALSE, include_na = FALSE),
+  ..   bmi = col_double(),
+  ..   children = col_factor(levels = c("0", "1", "2", "3", "4", "5"), ordered = FALSE, include_na = FALSE),
+  ..   smoker = col_factor(levels = c("yes", "no"), ordered = FALSE, include_na = FALSE),
+  ..   region = col_skip(),
+  ..   charges = col_double()
+  .. )
+\end{verbatim}
+
+\begin{verbatim}
+[1] 0
+\end{verbatim}
+
+\begin{verbatim}
+      age            sex           bmi        children smoker    
+ Min.   :18.00   male  :676   Min.   :15.96   0:574    yes: 274  
+ 1st Qu.:27.00   female:662   1st Qu.:26.30   1:324    no :1064  
+ Median :39.00                Median :30.40   2:240              
+ Mean   :39.21                Mean   :30.66   3:157              
+ 3rd Qu.:51.00                3rd Qu.:34.69   4: 25              
+ Max.   :64.00                Max.   :53.13   5: 18              
+    charges     
+ Min.   : 1122  
+ 1st Qu.: 4740  
+ Median : 9382  
+ Mean   :13270  
+ 3rd Qu.:16640  
+ Max.   :63770  
+\end{verbatim}
+
+\begin{verbatim}
+Loading required package: magrittr
+\end{verbatim}
+
+\includegraphics{TermProject_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{a<-}\KeywordTok{ggplot}\NormalTok{(nums, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{age)) }\OperatorTok{+}\StringTok{ }\KeywordTok{geom_histogram}\NormalTok{(}\DataTypeTok{color=}\StringTok{"darkblue"}\NormalTok{, }\DataTypeTok{fill=}\StringTok{"lightblue"}\NormalTok{,}\DataTypeTok{binwidth =} \DecValTok{5}\NormalTok{)}\OperatorTok{+}\KeywordTok{theme_minimal}\NormalTok{()}
+\NormalTok{b<-}\KeywordTok{ggplot}\NormalTok{(nums, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{bmi)) }\OperatorTok{+}\StringTok{ }\KeywordTok{geom_histogram}\NormalTok{(}\DataTypeTok{color=}\StringTok{"darkblue"}\NormalTok{, }\DataTypeTok{fill=}\StringTok{"lightblue"}\NormalTok{,}\DataTypeTok{binwidth =} \DecValTok{5}\NormalTok{)}\OperatorTok{+}\KeywordTok{theme_minimal}\NormalTok{()}
+\NormalTok{c<-}\KeywordTok{ggplot}\NormalTok{(nums, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{charges)) }\OperatorTok{+}\StringTok{ }\KeywordTok{geom_histogram}\NormalTok{(}\DataTypeTok{color=}\StringTok{"darkblue"}\NormalTok{, }\DataTypeTok{fill=}\StringTok{"lightblue"}\NormalTok{,}\DataTypeTok{binwidth =} \DecValTok{10000}\NormalTok{)}\OperatorTok{+}\KeywordTok{theme_minimal}\NormalTok{()}
+\NormalTok{histNums<-}\KeywordTok{ggarrange}\NormalTok{(a,b,c,}\DataTypeTok{ncol=}\DecValTok{3}\NormalTok{,}\DataTypeTok{nrow=}\DecValTok{1}\NormalTok{)}
+\KeywordTok{annotate_figure}\NormalTok{(histNums,}\DataTypeTok{top =} \StringTok{"Histograms of Numerical Variables"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{TermProject_files/figure-latex/unnamed-chunk-5-1.pdf}
+
+\hypertarget{results}{%
+\subsection{Results}\label{results}}
+
+\emph{Hypothesis Test 1}\\
+As \emph{Age} increases, does the amount of \emph{Charges} of the
+Primary Insurance Holder increase.\\
+\textbf{a priori hypothesis}: Medical \emph{Charges} of the older
+Primary Insurance Holders will be higher than younger Primary Insurance
+Holders.
+
+\includegraphics{TermProject_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+\begin{verbatim}
+                  2.5 %    97.5 %
+(Intercept)   1327.4403 5004.3297
+insurance$age  213.5788  301.8665
+\end{verbatim}
+
+\begin{verbatim}
+
+Call:
+lm(formula = insurance$charges ~ insurance$age)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+ -8059  -6671  -5939   5440  47829 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)     3165.9      937.1   3.378 0.000751 ***
+insurance$age    257.7       22.5  11.453  < 2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 11560 on 1336 degrees of freedom
+Multiple R-squared:  0.08941,   Adjusted R-squared:  0.08872 
+F-statistic: 131.2 on 1 and 1336 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\includegraphics{TermProject_files/figure-latex/unnamed-chunk-7-1.pdf}
+\includegraphics{TermProject_files/figure-latex/unnamed-chunk-7-2.pdf}
+
+\emph{Hypothesis Test 2}\\
+Medical \emph{Charges} increase with an increase inthe number of
+\emph{Children} under a Primary Insurance Holder.\\
+\textbf{a priori hypothesis} Primary Insurance Holders with a greater
+number of \emph{Children} have higher \emph{Charges} than the Primary
+Insurance Holders with fewer \emph{Children}.
+
+\includegraphics{TermProject_files/figure-latex/unnamed-chunk-8-1.pdf}
+
+\begin{verbatim}
+
+Call:
+lm(formula = charges ~ children)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-12770  -8720  -3878   3476  51404 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  12366.0      503.3  24.570  < 2e-16 ***
+children1      365.2      837.9   0.436  0.66302    
+children2     2707.6      926.9   2.921  0.00355 ** 
+children3     2989.3     1086.0   2.753  0.00599 ** 
+children4     1484.7     2463.6   0.603  0.54685    
+children5    -3579.9     2886.4  -1.240  0.21509    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 12060 on 1332 degrees of freedom
+Multiple R-squared:  0.01222,   Adjusted R-squared:  0.008517 
+F-statistic: 3.297 on 5 and 1332 DF,  p-value: 0.005786
+\end{verbatim}
+
+\emph{Hypothesis Test 3}\\
+As \emph{BMI} increases in Primary Insurance Holders so do medical
+\emph{Charges}. \textbf{a priori hypothesis} this is true.
+
+\includegraphics{TermProject_files/figure-latex/unnamed-chunk-10-1.pdf}
+
+\begin{verbatim}
+
+Call:
+lm(formula = charges ~ bmi)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-20956  -8118  -3757   4722  49442 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  1192.94    1664.80   0.717    0.474    
+bmi           393.87      53.25   7.397 2.46e-13 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 11870 on 1336 degrees of freedom
+Multiple R-squared:  0.03934,   Adjusted R-squared:  0.03862 
+F-statistic: 54.71 on 1 and 1336 DF,  p-value: 2.459e-13
+\end{verbatim}
+
+\hypertarget{multiple-linear-regression}{%
+\subsection{Multiple Linear
+Regression}\label{multiple-linear-regression}}
+
+\begin{verbatim}
+
+Call:
+lm(formula = charges ~ age + bmi + children + smoker + sex)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-12038.5  -2899.7   -926.6   1516.9  29621.0 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  11638.91    1011.53  11.506  < 2e-16 ***
+age            257.97      11.92  21.642  < 2e-16 ***
+bmi            320.30      27.42  11.683  < 2e-16 ***
+children1      370.96     421.75   0.880 0.379245    
+children2     1627.02     466.71   3.486 0.000506 ***
+children3      998.28     547.99   1.822 0.068723 .  
+children4     2992.88    1240.20   2.413 0.015947 *  
+children5      908.38    1454.04   0.625 0.532256    
+smokerno    -23808.57     413.40 -57.592  < 2e-16 ***
+sexfemale      124.85     333.23   0.375 0.707960    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 6066 on 1328 degrees of freedom
+Multiple R-squared:  0.7508,    Adjusted R-squared:  0.7491 
+F-statistic: 444.5 on 9 and 1328 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\includegraphics{TermProject_files/figure-latex/unnamed-chunk-12-1.pdf}
+\includegraphics{TermProject_files/figure-latex/unnamed-chunk-12-2.pdf}
+\includegraphics{TermProject_files/figure-latex/unnamed-chunk-12-3.pdf}
+\includegraphics{TermProject_files/figure-latex/unnamed-chunk-12-4.pdf}
+
+
+\end{document}

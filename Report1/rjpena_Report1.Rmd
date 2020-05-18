@@ -1,0 +1,159 @@
+---
+title: "Homework 1: Summary Statistics"
+author: "Ruben Pena"
+date: "Due: September 29, 2019, 10:00 p.m"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Data was imported renamed to "survey". Summary statistics of the dataset shows that there are missing values. These will need to be handled either by removal, imputation, or handled within each method/function run throughout the assignment.The levels of "Sex" and "Smoke" were noted.  
+
+```{r import_review,include=FALSE}
+survey <- read.csv('stats.survey.csv', na.strings='')
+attach(survey)
+summary(survey)
+str(survey)
+table(Sex)
+table(Smoke)
+```
+## Student Ages
+```{r Age_hist,echo=FALSE,fig.align="center"}
+hist_age <- hist(Age,xlab="Age (Years)", ylim=c(0,200), xlim=c(10,80),main="Distributions of Age",col="gold")
+```
+```{r summFunc_Age,include=FALSE}
+source('C:/Users/rpena/Desktop/FALL2019/StatMethods/Report1/summaryFun.R')
+ageSumm<-summaryFun(Age)
+ageSumm
+```
+#### *Center*      
+Values in *AGE* range from `r ageSumm["Min."]` to `r ageSumm["Max."]`. For this example, the **median would be a better measure of center**; this is supported by the histogram showing that a MUCH higher distribution of ages are in the 16-25 range.
+
+#### *Spread*      
+**The better estimate of spread, in this example, is IQR**. IQR is a more robust measure of the spread in the example and will give a better estimation of the spread. The range of this sample (`r (ageSumm["Max."]-ageSumm["Min."])`) is heavily influenced by outliers. This can be seen in the large difference between the range and the IQR (`r ageSumm["IQR"]`).
+
+#### *Skewness*      
+Based on these summary statistics and the histogram *AGE* can be described as being highly skewed to the right. This can also be observed in the summary statistics table (mean > median).   
+
+#### *Outlier Analysis*  
+Based on the distributions of *AGE*, you could justifiably label ages over 45(ish) as outliers. One could also argue that the target audience for this survey were people between 16-25, as students over these ages tend to be very rare. These outliers could be non-typical students, data entry errors, intentional input errors, or collection errors(survey sent to a faculty member or non-student).
+
+## Student Heights  
+
+```{r Height_conversion,include=FALSE}
+Height_Inch<-Height/2.54
+```
+
+*a priori* hypothesis of Student Heights - The mean and median heights of males will be larger than females. Males should also have a higher spread of heights compared to females as their heights have a larger range, in general.  
+
+```{r Ht~Sex_boxplot,echo=FALSE,fig.align="center"}
+boxplot(Height_Inch~Sex,main="Heights by Sex",xlab="Sex",ylab="Inches",col="gold")
+```
+
+#### *Center*    
+The limited range of values and lack of significant outliers for *Heights* of both sexes means that either median or mean could be used as a valid measure of center for this attribute. Looking at the boxplot it is easy to see that the *Heights* of Males is centered at a higher value than that of Female.  
+
+#### *Spread*    
+Either standard deviation or IQR could be used as an accurate measure of spread. As standard deviation is used in many formulae for analysis; I would choose this measurement for simplicity. As suspected, Male *Height* is more spread than Female *Height* (Male *Height* has a larger range of values than Female *Height*)  
+
+#### *Skewness*    
+The distribution of Female *Height* is nearly symmetrical with a negligible skew to the left. (Mean > Median)
+Male *Height* distribution also shows a skew  to the left. (Mean > Median)  
+The table below shows the differences in median vs. mean. These differences seem negligible for both Males and Females.
+
+#### *Outlier Analysis*  
+Only one outlier was identified in the boxplot figure and this outlier is not far off from the lower fence. This is most likely not an entry or collection error. It could just be a naturally shorter student or a younger student.
+
+
+```{r Ht~Sex_table,echo=FALSE}
+hS.mean<-as.data.frame(aggregate(Height_Inch~Sex, FUN=mean))
+hS.median<-as.data.frame(aggregate(Height_Inch~Sex, FUN=median))
+hS.sd<-as.data.frame(aggregate(Height_Inch~Sex, FUN=stats::sd))
+hS<-cbind(hS.mean,hS.median,hS.sd)
+names<-c("Sex","Mean_Ht","Median_Ht","StDev_Ht")
+keep<-c(1,2,4,6)
+hS<-hS[keep]
+colnames(hS)<-names
+hS
+```
+
+## Exercise and Smoking Trends
+
+```{r ExerSmoke_factorization,include=FALSE}
+Exer<-factor(Exer,levels=c('None','Some','Frequent'))
+Smoke<-factor(Smoke,levels=c('Never','Occasional','Regular','Heavy'))
+```
+
+
+*a priori* hypothesis of Student Exercise and Smoking Trends - Based on my experiences, I believe that Exercise and Smoking will have an inverse relationship (negative correlation; more exercise, less smoking/less exercise,more smoking, etc.)
+
+
+```{r sidexsideBarplots,echo=FALSE,fig.align="center"}
+SmEx.table<-table(Exer,Smoke)
+#SmEx.table
+barplot(SmEx.table,main="Regularity of Exercise per Smoking Habit",
+        beside=T,
+        legend.text = T,args.legend = list(title='Exercise Habit'),
+        xlab='Smoking Habit',
+        ylab='Frequency',
+        ylim=c(0,100),
+        col = c('red','yellow','darkgreen'))
+
+```
+
+Percentage of levels of *Exercise* (Read by row)
+```{r prop.table_Exer,echo=FALSE}
+prop.table(SmEx.table,margin=1)
+```
+
+Percentage of levels of *Smoke* (Read by Column)
+```{r prop.table_Smoke,echo=FALSE}
+prop.table(SmEx.table,margin=2)
+```
+
+#### *Relationship Analysis*  
+Based on both the barplot and marginal tables, there is an apparent relationship between *Exercise* and *Smoking* among students that were surveyed. Students that worked out "Frequent" or "Some" are much more likely to have answered "Never" in regards to *Smoke.* If no relationship existed between these two variables, the barplot would be much flatter and more evenly distributed. There would not be spikes of *Exercise* habits in the "Never" column. No discernible pattern would be present in the barplot.
+
+
+## Hand Spans
+
+```{r diffHnd,include=FALSE}
+diffHnd<- WrHnd - NWHnd
+corr<-cor(WrHnd,NWHnd,use="complete.obs")
+```
+
+
+```{r WrHnd~NWHnd,echo=FALSE,fig.align="center"}
+plot(WrHnd~NWHnd,
+     main="Spans of Writing Hands vs Non-Writing Hands",
+     xlab="Non-Writing Hands (cm)",
+     ylab="Writing Hands (cm)",
+     ylim=c(10,25),xlim=c(10,25),
+     sub=("Correlation Coefficient (r) = 0.9483103"))
+abline(lm(WrHnd~NWHnd),col="red")
+```
+  
+#### *Scatterplot Analysis*
+The correlation coefficient of *WrHnd* and *NWHnd*  is `r corr` and indicates a strong positive correlation. As the span of *WrHnd* increases, so does the span of *NWHnd*. This can also be seen in the abline of the linear model that I added to the scatter plot. There is strong positive linear trend.  
+
+```{r diffHand.hist,echo=FALSE,fig.align="center"}
+hist(diffHnd,main="Distribution of the Difference of WrHnd and NWHnd",xlab="Difference (cm)",ylim=c(0,140),xlim=c(-2,5),col="gold")
+```
+```{r include=FALSE}
+as.data.frame(DiffSum<-summaryFun(diffHnd))
+```
+
+```{r,include=FALSE}
+summaryFun(diffHnd)
+```
+
+#### *Center of Differences*
+The mean of the difference between WrHnd and NWHnd is `r DiffSum["Mean"]` and the median is `r DiffSum["Median"]`. The mean was drawn toward a potential outlier (difference of 4.7cm). In this case, median is a more accurate estimate of center.
+
+#### *Spread of Differences*  
+The minimum is `r DiffSum["Min."]`, the maximum is `r DiffSum["Max."]`, and the standard deviation is `r DiffSum["SD"]`. The maximum in this set throws off the calculation of the standard deviation. A more accurate estimate of spread can be found by ignoring this single outlier or by using the IQR.
+
+#### *Skewness and Outliers of Differences*
+The maximum value in this set (`r DiffSum["Max."]`) is most likely an outlier. The histogram shows that there is only ~1 such value and that the rest lie roughly between -2 and 2. This outlier causes the data to skew to the right(chasing the outlier).

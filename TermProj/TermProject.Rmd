@@ -1,0 +1,221 @@
+---
+title: "Analsis of Insurance Charges"
+author: "Group 7"
+date: "December 18, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(comment = NA)
+library(ggplot2)
+library(ggpubr)
+library(readr)
+```
+
+```{r include=FALSE}
+file<-"https://raw.githubusercontent.com/rjpena/Random/master/insurance.csv"
+insurance <- read_csv(file,col_types = cols(age = col_number(),children = col_factor(levels = c("0","1", "2", "3", "4", "5")), region = col_skip(),sex = col_factor(levels = c("male", "female")), smoker = col_factor(levels = c("yes","no"))))
+attach(insurance)
+```
+
+```{r include=FALSE}
+nums<-c("age","bmi","charges")
+cats<-c("sex","children","smoker")
+nums<-insurance[nums]
+cats<-insurance[cats]
+```
+
+## Introduction   
+This project is based on observing the trends of the Annual Medical Cost associated with the Primary Insurance Holder, based on multiple factors such as their *Age* in years, *Sex*, *BMI*, No. of *Children*, and *Smoking* tendency. This data is simulated based on Census responses and was taken from Kaggle at: "https://www.kaggle.com/mirichoi0218/insurance". The population of study is the general population of the United States. 
+
+This dataset and population were selected for analysis because medical charges in the United States are a hot topic for most adults in the country. The goal of this study is to identify relationships between certain demographic factors and the amount of medical charges that are incurred as a result.
+
+The relationships to be analysed in this paper are: 1) The effect of *Age* on medical charges, 2) the effect of the number of *Children* on medical charges, 3) the  effect of *BMI* on medical charges. A multiple linear regression will be conduction at the end to try to identify the variables with the most impact on medical charges.
+
+## Methods  
+The sampling unit for this observational study is an individual with insurance (Primary Insurance Holder) that was canvased during the Census.
+
+#### Variables  
+
+*Dependent Variables*
+
+Continuous Predictors:    
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Age (discrete)*: Age of Primary Insurance Holder in years.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*BMI (continuous)*: Body Mass Index, henceforth referred to as BMI, is the ratio of the weight of an individual to the square of their height. The units are in Metric system – (kg / m ^ 2).  
+  
+Categorical Predictors:  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Sex (categorical)*: Gender of the Primary Insurance Holder, Male or Female.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Smoker (categorical)*: If the Primary Insurance Holder is a Smoker or Non-Smoker.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Children (discrete)*: Number of children covered by health insurance; ranging from 0 to 5.   
+  
+*Independent Variable* 
+
+*Charges (continuous)*: Dollar amount of medical costs for each Primary Insurance Holder charged by Health Insurers.
+
+#### Data Pre-processing  
+Age: none  
+Sex: Converted from strings to factors with levels: Male/Female  
+BMI: none  
+Children: Converted from integer to factors with levels: 0,1,2,3,4,5  
+Smoker: Converted from string format to factors with levels: Yes/No 
+Charges:none  
+
+## Results
+
+Table 1:Summary Statistics of Numerical Variables
+```{r echo=FALSE}
+names1<-c("Count","Mean","Median","St.Dev.","Pearson Correlation w/ Charges")
+Age<-c(length(age),round(mean(age),2),round(median(age),2),round(sd(age),2),round(cor(age,charges),4))
+BMI<-c(length(bmi),round(mean(bmi),2),round(median(bmi),2),round(sd(bmi),2),round(cor(bmi,charges),4))
+Charges<-c(length(charges),round(mean(charges),2),round(median(charges),2),round(sd(charges),2),round(cor(charges,charges),4))
+numStats<-as.data.frame(rbind(Age,BMI,Charges))
+names(numStats)<-names1
+numStats
+```
+
+Table 2:*Sex*
+```{r echo=FALSE}
+table(sex)
+```
+Table 3:*Smoker*
+```{r echo=FALSE}
+table(smoker)
+```
+Table 4: *Children*
+```{r echo=FALSE}
+table(children)
+```
+
+```{r echo=FALSE}
+s<-ggplot(cats) + geom_bar(aes(x=sex),fill="steelblue")+theme_minimal()
+k<-ggplot(cats) + geom_bar(aes(x=children),fill="steelblue")+theme_minimal()
+sm<-ggplot(cats) + geom_bar(aes(x=smoker),fill="steelblue")+theme_minimal()
+barCats <- ggarrange(s,k,sm,ncol=3,nrow=1)
+annotate_figure(barCats,top = "Distributions of Categorical Variables")
+```
+
+```{r echo=FALSE}
+a<-ggplot(nums, aes(x=age)) + geom_histogram(color="black", fill="steelblue",binwidth = 5)+theme_minimal()
+b<-ggplot(nums, aes(x=bmi)) + geom_histogram(color="black", fill="steelblue",binwidth = 5)+theme_minimal()
+c<-ggplot(nums, aes(x=charges)) + geom_histogram(color="black", fill="steelblue",binwidth = 10000)+theme_minimal()
+histNums<-ggarrange(a,b,c,ncol=3,nrow=1)
+annotate_figure(histNums,top = "Histograms of Numerical Variables")
+```
+
+
+
+
+
+
+
+
+
+*Hypothesis Test 1*  
+As *Age* increases, does the amount of *Charges* of the Primary Insurance Holder increase.  
+**a priori hypothesis**: Medical *Charges* of the older Primary Insurance Holders will be higher than younger Primary Insurance Holders.
+
+```{r echo=FALSE}
+#this data looks sketchy af...
+ggplot(insurance,aes(x=age,y=charges)) + geom_point() + geom_smooth(method=lm) + theme_minimal() 
+```
+```{r echo=FALSE}
+lm1<-lm(insurance$charges~insurance$age)
+confint(lm1)
+summary(lm1)
+#qqnorm(lm1$residuals)
+#qqline(lm1$residuals)
+#hist(lm1$residuals)
+```
+
+*Hypothesis Test 2*  
+Medical *Charges* increase with an increase inthe number of *Children* under a Primary Insurance Holder.    
+**a priori hypothesis** Primary Insurance Holders with a greater number of *Children* have higher *Charges* than the Primary Insurance Holders with fewer *Children*.  
+
+```{r echo=FALSE}
+#this should look better once dummy variables for children are done
+ggplot(insurance,aes(x=children,y=charges)) + geom_point() + geom_smooth(method=lm) + theme_minimal()
+```
+
+```{r echo=FALSE}
+lm2<-lm(charges~children)
+summary(lm2)
+```
+
+*Hypothesis Test 3*  
+As *BMI* increases in Primary Insurance Holders so do medical *Charges*.
+**a priori hypothesis** this is true.  
+
+```{r echo=FALSE}
+ggplot(insurance,aes(x=bmi,y=charges)) + geom_point() + geom_smooth(method=lm) + theme_minimal()
+```
+
+```{r echo=FALSE}
+lm3<-lm(charges~bmi)
+summary(lm3)
+```
+
+
+## Multiple Linear Regression
+
+```{r echo=FALSE}
+mlr<-lm(charges~age+bmi+children+smoker+sex)
+summary(mlr)
+```
+
+
+
+'''
+Packages Used:
+dplyr, ggpubr, ggplot2, magrittr,readr
+
+TO DO:  
+1) Add CI to X~Y scatter plots for all models
+2) *Look into log  transform for charges*
+3) *Look into dummyvars for children*
+4) *spearman correlation for Categorical Data*
+5) a table similar to that output from the summary function in R, which has rows corresponding to slope and intercept and columns          corresponding to. . .
+                 the point estimate of the parameter
+                 the standard error
+                 the t-value
+                 the corresponding p-value
+                 include in the caption of this table the coefficient of determination (R2), the residual standard error σˆ, and the
+                     residual (error) degrees of freedom
+6) specifically discuss the validity of each of the assumptions of normality, homoscedasticity, and an appropriate linear model by               referring to. . .
+                 a normal q-q plot of the residuals
+                 the p-value of the Shapiro-Wilk test applied to the residuals
+                 a plot of the residuals against the fitted values
+
+7) if you feel that a transformation of the response or independent variable is warranted, fit this model instead (we really only             investigated the log transform, but ask your instructor about others if need be)
+             if you perform a transformation of the data, make sure to explicitly state you have done so in your discussion; your                 tables and plots requested above should then be associated with the transformed data
+8) if you feel that a polynomial model is warranted, include a couple of extra variables (don’t go beyond a cubic polynomial) in the       model
+            –your table of point estimates, standard errors, t-values and p-values will then have another row or two corresponding to               a quadratic or cubic term
+9) discuss the significance of your model by referring to the p-values; what inferences can you make from your
+    analysis?
+    
+PROBABLY DONT NEED TO DO THIS?????
+10) Difference in Two Proportions
+    If you have already performed a one-way ANOVA or simple linear regression, you may perform a test on the difference
+    between two population proportions. Your analysis should include. . .
+        • a contingency table of the counts of “successes” and “failures” in each of your two populations (use more appropriate                 labels than “success” or “failure” or “population 1” and “population 2”)
+              – include marginal row and column totals in your contingency table as well
+        • a table containing the difference in sample proportions, its standard error (sorry, you’ll have to go back to the
+          notes and implement the formula “by hand”), the value of the χ2-statistic (called X-squared in prop.test), the p-value, and           a 95% confidence interval on the difference between the proportions
+        • if you have “small” sample sizes (according to the rule of thumb used in class), report the p-value of Fisher’s exact test
+        • state the conclusion that you will draw from the test you performed
+          – was this a one-tailed or two-tailed test? make you explicitly state this in your discussion, and that your p-value                   reflects this fact
+
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
